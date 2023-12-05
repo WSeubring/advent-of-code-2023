@@ -65,8 +65,20 @@ func parseAlamnac(lines []string) Almanac {
 		seeds = append(seeds, seedInt)
 	}
 
+	// Part 2
+	newSeeds := make([]int, 0)
+	for i := 0; i < len(seeds); i += 2 {
+		start := seeds[i]
+		rangeLength := seeds[i+1]
+
+		for j := start; j < start+rangeLength; j++ {
+			newSeeds = append(newSeeds, j)
+		}
+	}
+
 	return Almanac{
-		seeds,
+		// seeds,
+		newSeeds,
 		parseAlamnacMap(sections[1][1:]),
 		parseAlamnacMap(sections[2][1:]),
 		parseAlamnacMap(sections[3][1:]),
@@ -109,6 +121,9 @@ func (almanac *Almanac) MinimumLocation() int {
 }
 
 func (almanac *Almanac) GetLocation(seed int) int {
+	if seed < 0 || seed > 100 {
+		panic("Seed out of range")
+	}
 	soil := almanac.ApplyMap(seed, almanac.seed_2_soil)
 	fertilizer := almanac.ApplyMap(soil, almanac.soil_2_fertilizer)
 	water := almanac.ApplyMap(fertilizer, almanac.fertilizer_2_water)
