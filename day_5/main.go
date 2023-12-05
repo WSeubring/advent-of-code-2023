@@ -57,16 +57,28 @@ func parseAlamnac(lines []string) Almanac {
 	}
 
 	sections = append(sections, section)
+
+	// Part 1
 	seeds := make([]int, 0)
-	// Select all after the first work in the first line
 	seedsInput := strings.Fields(sections[0][0])[1:]
 	for _, seed := range seedsInput {
 		seedInt, _ := strconv.Atoi(seed)
 		seeds = append(seeds, seedInt)
 	}
 
+	// Part 2
+	newSeeds := make([]int, 0)
+	for i := 0; i < len(seeds); i += 2 {
+		start := seeds[i]
+		seedRange := seeds[i+1]
+		for j := 0; j < seedRange; j++ {
+			newSeeds = append(newSeeds, start+j)
+		}
+	}
+
 	return Almanac{
-		seeds,
+		// seeds,
+		newSeeds,
 		parseAlamnacMap(sections[1][1:]),
 		parseAlamnacMap(sections[2][1:]),
 		parseAlamnacMap(sections[3][1:]),
@@ -96,7 +108,6 @@ func (almanac *Almanac) ApplyMap(source int, maps []AlmanacMap) int {
 			return almanacMap.Destination(source)
 		}
 	}
-	fmt.Printf("No map found for %v \n", source)
 	return source
 }
 
@@ -108,6 +119,7 @@ func (almanac *Almanac) MinimumLocation() int {
 	return slices.Min(locations)
 }
 
+// Maybe should have done a [][]AlmanacMap, but this works
 func (almanac *Almanac) GetLocation(seed int) int {
 	soil := almanac.ApplyMap(seed, almanac.seed_2_soil)
 	fertilizer := almanac.ApplyMap(soil, almanac.soil_2_fertilizer)
