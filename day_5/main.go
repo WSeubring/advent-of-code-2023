@@ -57,8 +57,9 @@ func parseAlamnac(lines []string) Almanac {
 	}
 
 	sections = append(sections, section)
+
+	// Part 1
 	seeds := make([]int, 0)
-	// Select all after the first work in the first line
 	seedsInput := strings.Fields(sections[0][0])[1:]
 	for _, seed := range seedsInput {
 		seedInt, _ := strconv.Atoi(seed)
@@ -69,10 +70,9 @@ func parseAlamnac(lines []string) Almanac {
 	newSeeds := make([]int, 0)
 	for i := 0; i < len(seeds); i += 2 {
 		start := seeds[i]
-		rangeLength := seeds[i+1]
-
-		for j := start; j < start+rangeLength; j++ {
-			newSeeds = append(newSeeds, j)
+		seedRange := seeds[i+1]
+		for j := 0; j < seedRange; j++ {
+			newSeeds = append(newSeeds, start+j)
 		}
 	}
 
@@ -108,7 +108,6 @@ func (almanac *Almanac) ApplyMap(source int, maps []AlmanacMap) int {
 			return almanacMap.Destination(source)
 		}
 	}
-	fmt.Printf("No map found for %v \n", source)
 	return source
 }
 
@@ -120,6 +119,7 @@ func (almanac *Almanac) MinimumLocation() int {
 	return slices.Min(locations)
 }
 
+// Maybe should have done a [][]AlmanacMap, but this works
 func (almanac *Almanac) GetLocation(seed int) int {
 	if seed < 0 || seed > 100 {
 		panic("Seed out of range")
