@@ -54,7 +54,15 @@ func (camelCardHand *CamelCardHand) Score() int {
 	mostPairs := 0
 	secondMostPairs := 0
 
-	for _, count := range camelCardHand.cardsCounts {
+	// Part two
+	jokers := camelCardHand.cardsCounts['J']
+
+	for key, count := range camelCardHand.cardsCounts {
+		// Part two
+		if key == 'J' {
+			continue
+		}
+
 		if count > mostPairs {
 			secondMostPairs = mostPairs
 			mostPairs = count
@@ -63,7 +71,9 @@ func (camelCardHand *CamelCardHand) Score() int {
 		}
 	}
 
-	return mostPairs*10 + secondMostPairs
+	// return mostPairs*10 + secondMostPairs
+	// part two
+	return (mostPairs+jokers)*10 + secondMostPairs
 }
 
 type CamcelCardHandsByScore []CamelCardHand
@@ -81,7 +91,9 @@ func (hands CamcelCardHandsByScore) Less(i, j int) bool {
 		'A': 14,
 		'K': 13,
 		'Q': 12,
-		'J': 11,
+		// 'J': 11,
+		// Part two
+		'J': 1,
 		'T': 10,
 		'9': 9,
 		'8': 8,
