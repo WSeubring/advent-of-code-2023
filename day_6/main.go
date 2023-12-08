@@ -47,28 +47,42 @@ func main() {
 		line := fileScanner.Text()
 		lines = append(lines, line)
 	}
-	times := strings.Fields(lines[0])[1:]
-	targetDistances := strings.Fields(lines[1])[1:]
+	// Part one
+	// times := strings.Fields(lines[0])[1:]
+	// targetDistances := strings.Fields(lines[1])[1:]
 
-	var count float64 = 0
+	// var count float64 = 0
 
-	for i, time := range times {
-		targetDistance, err := strconv.Atoi(targetDistances[i])
-		panicIfError(err)
-		time, err := strconv.Atoi(time)
-		panicIfError(err)
+	// for i, time := range times {
+	// 	targetDistance, err := strconv.Atoi(targetDistances[i])
+	// 	panicIfError(err)
+	// 	time, err := strconv.Atoi(time)
+	// 	panicIfError(err)
 
-		x1, x2 := AbcFormula(-1, float64(time), -(float64(targetDistance) + 0.0000001))
-		winningRange := math.Floor(x2) - math.Ceil(x1) + 1
+	// 	x1, x2 := AbcFormula(-1, float64(time), -(float64(targetDistance) + 0.0000001))
+	// 	winningRange := math.Floor(x2) - math.Ceil(x1) + 1
 
-		count *= winningRange
+	// 	count *= winningRange
 
-		if count == 0 {
-			count = winningRange
-		}
-	}
+	// 	if count == 0 {
+	// 		count = winningRange
+	// 	}
+	// }
 
-	fmt.Println(count)
+	// fmt.Println(count)
+	// Part two
+	timeString := strings.Join(strings.Fields(lines[0])[1:], "")
+	targetDistanceString := strings.Join(strings.Fields(lines[1])[1:], "")
+
+	targetDistance, err := strconv.Atoi(targetDistanceString)
+	panicIfError(err)
+	time, err := strconv.Atoi(timeString)
+	panicIfError(err)
+
+	x1, x2 := AbcFormula(-1, float64(time), -(float64(targetDistance) + 0.0000001))
+	winningRange := math.Floor(x2) - math.Ceil(x1) + 1
+
+	fmt.Println(winningRange)
 
 	panicIfError(fileScanner.Err())
 }
