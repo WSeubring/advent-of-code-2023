@@ -149,23 +149,17 @@ func main() {
 	queue = append(queue, startPipe)
 
 	for len(queue) > 0 {
-		// Get the first pipe in the queue
 		currentPipeCopy := queue[0]
 		currentPipe := pipes[currentPipeCopy.y][currentPipeCopy.x]
 
 		queue = queue[1:]
 
-		// Get the connected pipes of the current pipe
 		connectedPipes := currentPipe.getConnectedPipes(pipes)
 
-		// For each connected pipe
 		for _, connectedPipe := range connectedPipes {
-			// If the pipe is not visited
 			if connectedPipe.distance == 0 {
-				// Mark the pipe as visited
 				pipes[connectedPipe.y][connectedPipe.x].distance = currentPipe.distance + 1
 
-				// Append the connected pipes of the current pipe
 				queue = append(queue, connectedPipe)
 			}
 		}
