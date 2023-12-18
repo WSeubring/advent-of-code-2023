@@ -24,25 +24,25 @@ func findStart(pipes [][]Pipe) Pipe {
 }
 
 type Pipe struct {
-	x1       int
-	y1       int
-	x2       int
-	y2       int
-	posX     int
-	posY     int
+	left     int
+	top      int
+	right    int
+	bottom   int
+	x        int
+	y        int
 	distance int
 }
 
 func (pipe *Pipe) String() string {
-	return fmt.Sprintf("%d,%d,%d,%d", pipe.x1, pipe.y1, pipe.x2, pipe.y2)
+	return fmt.Sprintf("%d,%d,%d,%d", pipe.left, pipe.top, pipe.right, pipe.bottom)
 }
 
 func (pipe *Pipe) isStart() bool {
-	return pipe.x1 == 10 && pipe.y1 == 10 && pipe.x2 == 10 && pipe.y2 == 10
+	return pipe.left == 1 && pipe.top == 1 && pipe.right == 1 && pipe.bottom == 1
 }
 
 func (pipe *Pipe) isGround() bool {
-	return pipe.x1 == -10 && pipe.y1 == -10 && pipe.x2 == -10 && pipe.y2 == -10
+	return pipe.left == 0 && pipe.top == 0 && pipe.right == 0 && pipe.bottom == 0
 }
 
 func parseGridToPipes(grid [][]rune) [][]Pipe {
@@ -52,14 +52,21 @@ func parseGridToPipes(grid [][]rune) [][]Pipe {
 		pipes[y] = make([]Pipe, len(row))
 		for x, char := range row {
 			pipesMap := map[rune](Pipe){
-				'|': Pipe{0, -1, 0, 1, x, y, 0},
-				'-': Pipe{-1, 0, 1, 0, x, y, 0},
-				'L': Pipe{-1, 0, 0, -1, x, y, 0},
-				'J': Pipe{0, -1, 1, 0, x, y, 0},
-				'7': Pipe{0, 1, -1, 0, x, y, 0},
-				'F': Pipe{1, 0, 0, 1, x, y, 0},
-				'.': Pipe{-10, -10, -10, -10, x, y, 0},
-				'S': Pipe{10, 10, 10, 10, x, y, 0},
+				// Top-bottom
+				'|': Pipe{left: 0, top: 1, right: 0, bottom: 1, x: x, y: y, distance: 0},
+				// Left-right
+				'-': Pipe{left: 1, top: 0, right: 1, bottom: 0, x: x, y: y, distance: 0},
+				// top-right
+				'L': Pipe{left: 0, top: 1, right: 1, bottom: 0, x: x, y: y, distance: 0},
+				// left-top
+				'J': Pipe{left: 1, top: 1, right: 0, bottom: 0, x: x, y: y, distance: 0},
+				// left-bottom
+				'7': Pipe{left: 1, top: 0, right: 0, bottom: 1, x: x, y: y, distance: 0},
+				// bottom-right
+				'F': Pipe{left: 0, top: 0, right: 1, bottom: 1, x: x, y: y, distance: 0},
+
+				'.': Pipe{0, 0, 0, 0, x, y, 0},
+				'S': Pipe{1, 1, 1, 1, x, y, 0},
 			}
 			if pipe, ok := pipesMap[char]; ok {
 				pipes[y][x] = pipe
@@ -73,33 +80,44 @@ func parseGridToPipes(grid [][]rune) [][]Pipe {
 }
 
 func (pipe *Pipe) isConnected(nextPipe Pipe) bool {
-	return (pipe.x1 == nextPipe.x1 && pipe.y1 == nextPipe.y1) ||
-		(pipe.x1 == nextPipe.x2 && pipe.y1 == nextPipe.y2) ||
-		(pipe.x2 == nextPipe.x1 && pipe.y2 == nextPipe.y1) ||
-		(pipe.x2 == nextPipe.x2 && pipe.y2 == nextPipe.y2) ||
-		(pipe.isStart() && !nextPipe.isGround()) ||
-		(!pipe.isGround() && nextPipe.isStart())
+	if nextPipe.x < pipe.x {
+		return (pipe.left == 1 && nextPipe.right == 1)
+	}
+
+	if nextPipe.x > pipe.x {
+		return (pipe.right == 1 && nextPipe.left == 1)
+	}
+
+	if nextPipe.y < pipe.y {
+		return (pipe.top == 1 && nextPipe.bottom == 1)
+	}
+
+	if nextPipe.y > pipe.y {
+		return (pipe.bottom == 1 && nextPipe.top == 1)
+	}
+
+	return false
 }
 
 func (pipe *Pipe) getConnectedPipes(pipes [][]Pipe) []Pipe {
 	connectedPipes := make([]Pipe, 0)
 
-	for i := -1; i < 2; i++ {
-		for j := -1; j < 2; j++ {
-			if pipe.posY+i < 0 || pipe.posY+i >= len(pipes) || pipe.posX+j < 0 || pipe.posX+j >= len(pipes[pipe.posY+i]) {
-				// Out of bounds
-				continue
+	for _, offset := range []int{-1, 1} {
+		// Check vertical neighbours (up and down)
+		if pipe.y+offset >= 0 && pipe.y+offset < len(pipes) {
+			if pipe.isConnected(pipes[pipe.y+offset][pipe.x]) {
+				connectedPipes = append(connectedPipes, pipes[pipe.y+offset][pipe.x])
 			}
+		}
 
-			if i == 0 && j == 0 {
-				// Do not self check
-				continue
-			}
-			if pipe.isConnected(pipes[pipe.posY+i][pipe.posX+j]) {
-				connectedPipes = append(connectedPipes, pipes[pipe.posY+i][pipe.posX+j])
+		// Check horizontal neighbours (left and right)
+		if pipe.x+offset >= 0 && pipe.x+offset < len(pipes[pipe.y]) {
+			if pipe.isConnected(pipes[pipe.y][pipe.x+offset]) {
+				connectedPipes = append(connectedPipes, pipes[pipe.y][pipe.x+offset])
 			}
 		}
 	}
+
 	return connectedPipes
 }
 
@@ -133,7 +151,7 @@ func main() {
 	for len(queue) > 0 {
 		// Get the first pipe in the queue
 		currentPipeCopy := queue[0]
-		currentPipe := pipes[currentPipeCopy.posY][currentPipeCopy.posX]
+		currentPipe := pipes[currentPipeCopy.y][currentPipeCopy.x]
 
 		queue = queue[1:]
 
@@ -145,7 +163,7 @@ func main() {
 			// If the pipe is not visited
 			if connectedPipe.distance == 0 {
 				// Mark the pipe as visited
-				pipes[connectedPipe.posY][connectedPipe.posX].distance = currentPipe.distance + 1
+				pipes[connectedPipe.y][connectedPipe.x].distance = currentPipe.distance + 1
 
 				// Append the connected pipes of the current pipe
 				queue = append(queue, connectedPipe)
@@ -156,6 +174,10 @@ func main() {
 	// Print the grid
 	for _, row := range pipes {
 		for _, pipe := range row {
+			if pipe.isStart() {
+				fmt.Printf("S")
+				continue
+			}
 			fmt.Printf("%d", pipe.distance%10)
 		}
 		fmt.Println()
@@ -170,6 +192,9 @@ func main() {
 			}
 		}
 	}
+
+	fmt.Println(pipes[3][1].isConnected(pipes[3][2]))
+	fmt.Println(pipes[2][3].isConnected(pipes[3][3]))
 
 	fmt.Println(maxDistance)
 }
